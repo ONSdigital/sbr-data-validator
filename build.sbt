@@ -1,4 +1,3 @@
-
 name := "sbr-enterprise-assembler"
 
 version := "1.0"
@@ -35,4 +34,17 @@ libraryDependencies ++= Seq(
   ("org.apache.crunch" % "crunch-hbase" % "0.15.0")   .exclude("com.sun.jersey","jersey-server")
 )
 
+
+assemblyMergeStrategy in assembly := {
+  case PathList("org", "apache", xs @ _*)    => MergeStrategy.first
+  case PathList("javax", "servlet", xs @ _*) => MergeStrategy.first
+  case PathList("javax", "inject", xs @ _*) => MergeStrategy.first
+  case PathList("javax", "ws", xs @ _*) => MergeStrategy.first
+  case PathList("jersey",".", xs @ _*) => MergeStrategy.first
+  case PathList("aopalliance","aopalliance", xs @ _*) => MergeStrategy.first
+  case PathList("META-INF", xs @ _*)         => MergeStrategy.discard
+  case x =>
+    val oldStrategy = (assemblyMergeStrategy in assembly).value
+    oldStrategy(x)
+}
 mainClass in (Compile,run) := Some("validator.Main")
