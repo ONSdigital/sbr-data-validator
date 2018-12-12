@@ -128,8 +128,6 @@ object InputAnalyser extends RddLogging{
     val chLinks = getChLinksDF(appconf).cache()
 
 
-
-
     links.unpersist()
     ents.unpersist()
     lus.unpersist()
