@@ -7,15 +7,12 @@ package object df {
 
   val louRowSchema = new StructType()
                               .add(StructField("lurn", StringType,false))
-                              .add(StructField("luref", StringType,true))
                               .add(StructField("ern", StringType,false))
-                              .add(StructField("prn", StringType,false))
                               .add(StructField("rurn", StringType,false))
-                              .add(StructField("ruref", StringType,true))
-                              .add(StructField("entref", StringType,true))
 
 
   val linksLouRowSchema = new StructType()
+                              .add(StructField("lurn", StringType,false))
                               .add(StructField("rurn", StringType,false))
                               .add(StructField("ern", StringType,false))
 
@@ -55,27 +52,23 @@ package object df {
   val ruRowSchema = new StructType()
                               .add(StructField("rurn", StringType,false))
                               .add(StructField("ern", StringType,false))
-                              .add(StructField("entref", StringType,true))
-                              .add(StructField("ruref", StringType,true))
-                              .add(StructField("prn", StringType,false))
 
 
   val linksRuRowSchema = new StructType()
                               .add(StructField("rurn", StringType,false))
-                              .add(StructField("lurn", StringType,true))
-                              .add(StructField("ern", StringType,true))
+    .add(StructField("ern", StringType,true))
+    .add(StructField("lous", ArrayType(StringType,true),true))
 
 
   val entRowSchema = new StructType()
                               .add(StructField("ern", StringType,false))
-                              .add(StructField("prn", StringType,false))
-                              .add(StructField("entref", StringType,true))
 
 
   val linksEntRowSchema = new StructType()
                               .add(StructField("ern", StringType,false))
                               .add(StructField("leus", ArrayType(StringType,true),true))
                               .add(StructField("lous", ArrayType(StringType,true),true))
+                              .add(StructField("rus", ArrayType(StringType,true),true))
 
 
   val existingLuBiRowSchema = new StructType()

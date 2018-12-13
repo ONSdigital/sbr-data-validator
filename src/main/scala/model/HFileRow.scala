@@ -131,7 +131,12 @@ case class HFileRow(key:String, cells:Iterable[KVCell[String,String]]) {
         } else paye)
       }.getOrElse(null),
       Try {
-        getCellArrayValue("LOU").map(vat => if (vat.startsWith("c_")) {
+        getCellArrayValue("LOU").map(paye => if (paye.startsWith("c_")) {
+          paye.substring(2)
+        } else paye)
+      }.getOrElse(null),
+      Try {
+        getCellArrayValue("REU").map(vat => if (vat.startsWith("c_")) {
           vat.substring(2)
         } else vat)
       }.getOrElse(null)
