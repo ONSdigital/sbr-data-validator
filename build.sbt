@@ -1,4 +1,4 @@
-name := "sbr-enterprise-assembler"
+name := "sbr-data-validator"
 
 version := "1.0"
 

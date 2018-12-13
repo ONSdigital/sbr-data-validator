@@ -178,23 +178,6 @@ object InputAnalyser extends RddLogging{
     ???
   }
 
-def validateLous(lous:DataFrame,louLinks:DataFrame,ruLinks:DataFrame, rus:DataFrame):DataFrame = {
-   //lous: "lurn" "ern" "rurn"
-  //louLinks: "lurn" "rurn" "ern"
-  //rulinks: "rurn" "lurn" "ern"
-  //rus: "rurn" "ern"
-
-  //lous without parent Reporting Unit on Unit tables level
- val ru_less_lous = lous.join(rus,Seq("rurn"), "left_anti")
-
-  //lous without ru on links level
-  val ru_less_lous_links = louLinks.join(ruLinks,Seq("rurn"), "left_anti")
-
-  //lous without parent Enterprise on table level
-
-  //lous without parent Enterprise on links level
-
-}
 
   def getRepartionedRdd[T](rdd:RDD[T]) = {
     val noOfPartiions = rdd.getNumPartitions
