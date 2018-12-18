@@ -61,32 +61,20 @@ case class HFileRow(key:String, cells:Iterable[KVCell[String,String]]) {
 
   def toLeuRow = {
     import spark.extensions.df._
-
+/**
+  * "ubrn"
+  * "ern"
+  * "crn"
+  * "paye"
+  * "vat"
+  * */
     try {
       new GenericRowWithSchema(Array(
 
         getValueOrStr("ubrn"),
-        key.split("~").head.reverse,
+        key.split("~").head.reverse,//ern
         //getValueOrStr("ern"),
-        getValueOrStr("prn"),
-        getValueOrNull("crn"),
-        getValueOrStr("name"),
-        getValueOrNull("trading_style"),
-        getValueOrStr("address1"),
-        getValueOrNull("address2"),
-        getValueOrNull("address3"),
-        getValueOrNull("address4"),
-        getValueOrNull("address5"),
-        getValueOrStr("postcode"),
-        getValueOrStr("sic07"),
-        getValueOrNull("paye_jobs"),
-        getValueOrNull("turnover"),
-        getValueOrStr("legal_status"),
-        getValueOrNull("trading_status"),
-        getValueOrStr("birth_date"),
-        getValueOrNull("death_date"),
-        getValueOrNull("death_code"),
-        getValueOrNull("uprn")
+        getValueOrNull("crn")
       ), leuRowSchema)
     } catch {
       case e: java.lang.RuntimeException => {

@@ -72,18 +72,18 @@ object InputAnalyser extends RddLogging{
   }
 
   def getReportingUnitDF(appconf:AppParams)(implicit spark: SparkSession): DataFrame =  {
-    val ruRows:RDD[Row] = HBaseDao.readTable(appconf,Configs.conf, HBaseDao.rusTableName(appconf)).map(_.toLouRow)
+    val ruRows:RDD[Row] = HBaseDao.readTable(appconf,Configs.conf, HBaseDao.rusTableName(appconf)).map(_.toRuRow)
     spark.createDataFrame(ruRows, ruRowSchema)
   }
 
   def getLocallUnitDF(appconf:AppParams)(implicit spark: SparkSession): DataFrame =  {
-    val tuRows:RDD[Row] = HBaseDao.readTable(appconf,Configs.conf, HBaseDao.lousTableName(appconf)).map(_.toRuRow)
+    val tuRows:RDD[Row] = HBaseDao.readTable(appconf,Configs.conf, HBaseDao.lousTableName(appconf)).map(_.toLouRow)
     spark.createDataFrame(tuRows, louRowSchema)
   }
 
 
   def getLegalUnitDF(appconf:AppParams)(implicit spark: SparkSession): DataFrame =  {
-    val leuRows:RDD[Row] = HBaseDao.readTable(appconf,Configs.conf, HBaseDao.leusTableName(appconf)).map(_.toLeuLinksRow)
+    val leuRows:RDD[Row] = HBaseDao.readTable(appconf,Configs.conf, HBaseDao.leusTableName(appconf)).map(_.toLeuRow)
     spark.createDataFrame(leuRows, linksLeuRowSchema)
   }
 
@@ -92,27 +92,20 @@ object InputAnalyser extends RddLogging{
     spark.createDataFrame(entsRows, entRowSchema)
   }
 
-  def getData(appconf:AppParams)(implicit spark: SparkSession):DataReport =  {
+  def getData(appconf:AppParams)(implicit spark: SparkSession):Unit =  {
 
-    import org.apache.spark.sql._
     import org.apache.spark.sql.functions._
-    import org.apache.spark.sql.types._
-    //val links = getLinksDF(appconf).cache()
 
     val ents = getEntsDF(appconf).cache()
-
-    val lus = getLegalUnitDF(appconf).cache()
-
-    val lous = getLocallUnitDF(appconf).cache()
-
-    val rus = getReportingUnitDF(appconf).cache()
-
     val entLinks = getEnterpriseUnitLinksDF(appconf).cache()
 
+    val leus = getLegalUnitDF(appconf).cache()
     val leuLinks = getLegalUnitLinksDF(appconf).cache()
 
+    val lous = getLocallUnitDF(appconf).cache()
     val louLinks = getLocalUnitLinksDF(appconf).cache()
 
+    val rus = getReportingUnitDF(appconf).cache()
     val ruLinks = getReportingUnitLinksDF(appconf).cache()
 
     val vatLinks = getVatLinksDF(appconf).cache()
@@ -164,37 +157,68 @@ object InputAnalyser extends RddLogging{
 
 
 
-    /**
-      * Legal Units
-      * */
+
+  /**
+    * Legal Units
+    * */
+    val not_linked_leus = leus.join(entLinks, Seq("ern"),"left_anti")
+    val no_table_ref_leus_links = entLinks.join(leus, Seq("ern"),"left_anti")
+    val ent_less_leus_links = leuLinks.join(entLinks.drop("rus").drop("lous").withColumn("ubrn", explode_outer(col("leus"))),Seq("ern"), "left_anti")
+
+    val ent_less_leus = leus.join(ents, Seq("ern"),"left_anti")
+
+
+
+
+  /**
+    * Enterprise Units
+    * */
+
+    //ents not registered in links
+   val not_linked_ents = ents.join(entLinks,Seq("ern"),"left_anti")
+   val no_table_ref_ent_links = entLinks.join(ents,Seq("ern"),"left_anti")
+    //on ENT table level
+   val ents_with_fantom_leu_children = ents.join(leus, Seq("ern"),"left_anti")
+   val ents_with_fantom_ru_children = ents.join(rus, Seq("ern"),"left_anti")
+   val ents_with_fantom_lou_children = ents.join(lous, Seq("ern"),"left_anti")
+
+
+
+  /**
+    * Admin data: VAT, PAYE, CH
+    * */
+    //links level
+    val vatFlattennedLeus = leuLinks.select("ubrn","vats").withColumn("vat", explode_outer(col("vats"))).cache()
+    val leu_less_vat_links = vatLinks.join(vatFlattennedLeus,Seq("ubrn"),"left_anti")
+    val leu_with_fantom_vats = vatFlattennedLeus.join(vatLinks,Seq("ubrn"),"left_anti")
+    vatFlattennedLeus.unpersist()
+
+    val payeFlattennedLeusLinks = leuLinks.select("ubrn","payes").withColumn("paye", explode_outer(col("payes"))).cache()
+    val leu_less_paye_links = payeLinks.join(vatFlattennedLeus,Seq("ubrn"),"left_anti")
+    val leu_with_fantom_paye = vatFlattennedLeus.join(vatLinks,Seq("ubrn"),"left_anti")
+    payeFlattennedLeusLinks.unpersist()
+
+    val leu_less_link_ch = chLinks.join(leuLinks.select("crn","ubrn"),Seq("crn","ubrn"),"left_anti")
+    val ch_link_with_phantom_leu = leuLinks.select("crn","ubrn").join(chLinks,Seq("crn","ubrn"),"left_anti")
+
+
+    //table to links level
+    val leu_less_ch = chLinks.join(leus,Seq("crn","ubrn"),"left_anti")
+    val leu_with_fantom_ch_links = leus.join(chLinks,Seq("crn","ubrn"),"left_anti")
+
 
     ents.unpersist()
-    lus.unpersist()
+    leus.unpersist()
     lous.unpersist()
     rus.unpersist()
     entLinks.unpersist()
     leuLinks.unpersist()
 
-    ???
+
   }
 
-def validateLous(lous:DataFrame,louLinks:DataFrame,ruLinks:DataFrame, rus:DataFrame):DataFrame = {
-   //lous: "lurn" "ern" "rurn"
-  //louLinks: "lurn" "rurn" "ern"
-  //rulinks: "rurn" "lurn" "ern"
-  //rus: "rurn" "ern"
 
-  //lous without parent Reporting Unit on Unit tables level
- val ru_less_lous = lous.join(rus,Seq("rurn"), "left_anti")
 
-  //lous without ru on links level
-  val ru_less_lous_links = louLinks.join(ruLinks,Seq("rurn"), "left_anti")
-
-  //lous without parent Enterprise on table level
-
-  //lous without parent Enterprise on links level
-
-}
 
   def getRepartionedRdd[T](rdd:RDD[T]) = {
     val noOfPartiions = rdd.getNumPartitions

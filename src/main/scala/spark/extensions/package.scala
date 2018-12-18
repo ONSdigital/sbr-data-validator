@@ -4,6 +4,15 @@ import org.apache.spark.sql.types.{ArrayType, StringType, StructField, StructTyp
 
 package object df {
 
+  val reportRowSchema = new StructType()
+                            .add(StructField("primary unit", StringType,false))
+                            .add(StructField("p.u. table", StringType,true))
+                            .add(StructField("p.u. id", StringType,true))
+                            .add(StructField("secondary unit", StringType,true))
+                            .add(StructField("s.u. table", StringType,true))
+                            .add(StructField("description", StringType,true))
+
+
 
   val louRowSchema = new StructType()
                               .add(StructField("lurn", StringType,false))
@@ -19,16 +28,16 @@ package object df {
 
   val leuRowSchema = new StructType()
                               .add(StructField("ubrn", StringType,false))
+                              .add(StructField("ern", StringType,false))
                               .add(StructField("crn", StringType,true))
-                              .add(StructField("uprn", StringType,false))
 
 
   val linksLeuRowSchema = new StructType()
                               .add(StructField("ubrn", StringType,false))
                               .add(StructField("ern", StringType,true))
                               .add(StructField("crn", StringType,true))
-                              .add(StructField("paye", ArrayType(StringType,true),true))
-                              .add(StructField("vat", ArrayType(StringType,true),true))
+                              .add(StructField("payes", ArrayType(StringType,true),true))
+                              .add(StructField("vats", ArrayType(StringType,true),true))
 
 
   val linksChRowSchema =  new StructType()
