@@ -95,6 +95,37 @@ trait HBaseDao extends Serializable{
       readKvsFromHBase
     }}
 
+  def loadLinksHFile(implicit connection:Connection,appParams:AppParams) = wrapTransaction(linksTableName(appParams)){ (table, admin) =>
+    val bulkLoader = new LoadIncrementalHFiles(connection.getConfiguration)
+    val regionLocator = connection.getRegionLocator(table.getName)
+    bulkLoader.doBulkLoad(new Path(appParams.PATH_TO_LINKS_HFILE), admin,table,regionLocator)
+  }
+
+  def loadEnterprisesHFile(implicit connection:Connection,appParams:AppParams) = wrapTransaction(entsTableName(appParams)){ (table, admin) =>
+    val bulkLoader = new LoadIncrementalHFiles(connection.getConfiguration)
+    val regionLocator = connection.getRegionLocator(table.getName)
+    bulkLoader.doBulkLoad(new Path(appParams.PATH_TO_ENTERPRISE_HFILE), admin,table,regionLocator)
+  }
+
+
+  def loadLousHFile(implicit connection:Connection,appParams:AppParams) = wrapTransaction(lousTableName(appParams)){ (table, admin) =>
+    val bulkLoader = new LoadIncrementalHFiles(connection.getConfiguration)
+    val regionLocator = connection.getRegionLocator(table.getName)
+    bulkLoader.doBulkLoad(new Path(appParams.PATH_TO_LOCALUNITS_HFILE), admin,table,regionLocator)
+  }
+
+
+  def loadLeusHFile(implicit connection:Connection,appParams:AppParams) = wrapTransaction(leusTableName(appParams)){ (table, admin) =>
+    val bulkLoader = new LoadIncrementalHFiles(connection.getConfiguration)
+    val regionLocator = connection.getRegionLocator(table.getName)
+    bulkLoader.doBulkLoad(new Path(appParams.PATH_TO_LEGALUNITS_HFILE), admin,table,regionLocator)
+  }
+
+  def loadRusHFile(implicit connection:Connection,appParams:AppParams) = wrapTransaction(rusTableName(appParams)){ (table, admin) =>
+    val bulkLoader = new LoadIncrementalHFiles(connection.getConfiguration)
+    val regionLocator = connection.getRegionLocator(table.getName)
+    bulkLoader.doBulkLoad(new Path(appParams.PATH_TO_REPORTINGUNITS_HFILE), admin,table,regionLocator)
+  }
 
 
   private def wrapTransaction(fullTableName:String)(action:(Table,Admin) => Unit)(implicit connection:Connection){

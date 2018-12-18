@@ -14,30 +14,6 @@ case class DataReport(entCount:Long, lusCount:Long, losCount:Long, childlessEntE
 
 object InputAnalyser extends RddLogging{
 
-  def getDfFormatData(appconf:AppParams)(implicit spark: SparkSession):Unit =  {
-
-      val ents = getEntsDF(appconf)
-
-      val lus = getLegalUnitDF(appconf)
-
-      val lous = getLocallUnitDF(appconf)
-
-      val rus = getReportingUnitDF(appconf)
-
-      val entLinks = getEnterpriseUnitLinksDF(appconf)
-
-      val leuLinks = getLegalUnitLinksDF(appconf)
-
-      val louLinks = getLocalUnitLinksDF(appconf)
-
-      val ruLinks = getReportingUnitLinksDF(appconf)
-
-      val vatLinks = getVatLinksDF(appconf)
-
-      val payeLinks = getPayeLinksDF(appconf)
-
-      val chLinks = getChLinksDF(appconf)
-  }
 
   def getEnterpriseUnitLinksDF(appconf:AppParams)(implicit spark:SparkSession) = {
     val entLinksRows:RDD[Row] = HBaseDao.readLinksWithKeyPrefixFilter(Configs.conf,appconf, "ENT~")map(_.toEntLinkRow)
