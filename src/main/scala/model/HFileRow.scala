@@ -61,13 +61,7 @@ case class HFileRow(key:String, cells:Iterable[KVCell[String,String]]) {
 
   def toLeuRow = {
     import spark.extensions.df._
-/**
-  * "ubrn"
-  * "ern"
-  * "crn"
-  * "paye"
-  * "vat"
-  * */
+
     try {
       new GenericRowWithSchema(Array(
 
@@ -88,24 +82,7 @@ case class HFileRow(key:String, cells:Iterable[KVCell[String,String]]) {
 
     new GenericRowWithSchema(Array(
       getValueOrStr("rurn"),
-      getValueOrStr("ern"),
-      getValueOrStr("name"),
-      getValueOrNull("entref"),
-      getValueOrNull("ruref"),
-      getValueOrNull("trading_style"),
-      getValueOrStr("legal_status"),
-      getValueOrStr("address1"),
-      getValueOrNull("address2"),
-      getValueOrNull("address3"),
-      getValueOrNull("address4"),
-      getValueOrNull("address5"),
-      getValueOrStr("postcode"),
-      getValueOrStr("sic07"),
-      getValueOrStr("employees"),
-      getValueOrStr("turnover"),
-      getValueOrStr("prn"),
-      getValueOrStr("region"),
-      getValueOrStr("employment", default = "0")
+      getValueOrStr("ern")
     ),ruRowSchema)
   }
 
@@ -224,24 +201,8 @@ case class HFileRow(key:String, cells:Iterable[KVCell[String,String]]) {
       new GenericRowWithSchema(Array(
 
         getValueOrStr("lurn"),
-        getValueOrNull("luref"),
         getValueOrStr("ern"),
-        getValueOrStr("prn"),
-        getValueOrStr("rurn"),
-        getValueOrNull("ruref"),
-        getValueOrStr("name"),
-        getValueOrNull("entref"),
-        getValueOrNull("trading_style"),
-        getValueOrStr("address1"),
-        getValueOrNull("address2"),
-        getValueOrNull("address3"),
-        getValueOrNull("address4"),
-        getValueOrNull("address5"),
-        getValueOrStr("postcode"),
-        getValueOrStr("region"),
-        getValueOrStr("sic07"),
-        getValueOrNull("employees"),
-        getValueOrStr("employment",default = "0")
+        getValueOrStr("rurn")
       ), louRowSchema)
     }catch {
       case e: java.lang.RuntimeException => {

@@ -24,12 +24,11 @@ class AnalyserSpec extends HBaseConnectionManager with Paths with WordSpecLike w
 
   val appConfs = AppParams(
     (Array[String](
-      "LINKS", "ons", "l", linkHfilePath,
-      "LEU", "ons", "d", leuHfilePath,
-      "ENT", "ons", "d",entHfilePath,
-      "LOU", "ons", "d",louHfilePath,
-      "REU", "ons", "d",ruHfilePath,
-      parquetPath,
+      "LINKS_201804", "ons", "l", existingLinksRecordHFiles,
+      "LEU_201804", "ons", "d", existingLeusRecordHFiles,
+      "ENT_201804", "ons", "d",existingEntRecordHFiles,
+      "LOU_201804", "ons", "d",existingLousRecordHFiles,
+      "REU_201804", "ons", "d",existingRusRecordHFiles,
       "201804",
       "HIVE DB NAME",
       "HIVE TABLE NAME",
@@ -37,22 +36,19 @@ class AnalyserSpec extends HBaseConnectionManager with Paths with WordSpecLike w
       payeFilePath,
       vatFilePath,
       "local",
-      "add-calculated-period"
+      parquetPath
     )))
 
 
-  override def beforeAll() = {
+/*  override def beforeAll() = {
     implicit val spark: SparkSession = SparkSession.builder().master("local[*]").appName("enterprise assembler").getOrCreate()
     conf.set("hbase.zookeeper.quorum", "localhost")
     conf.set("hbase.zookeeper.property.clientPort", "2181")
     withHbaseConnection { implicit connection:Connection =>
       createRecords(appConfs)
-      ParquetDao.jsonToParquet(jsonFilePath)(spark, appConfs)
-      //val existingDF = readEntitiesFromHFile[HFileRow](existingLinksRecordHFiles).collect
-      InputAnalyser.getData(appConfs)(spark)
     }
     spark.stop
-  }
+  }*/
 
 
   "sbr-data-validator" should {

@@ -7,6 +7,7 @@ import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import spark.RddLogging
 import spark.extensions.df._
 import model._
+import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 
 
 
@@ -94,8 +95,8 @@ object InputAnalyser extends RddLogging{
       * Local Units
       * */
     //lous without parent Reporting Unit on Unit tables level
-    val ru_less_lous = lous.join(rus.withColumn("lurn", explode_outer(col("lous"))),Seq("lurn"), "left_anti")
-
+    val ru_less_lous = lous.join(rus,Seq("rurn"), "left_anti")
+    val ru_less_lous_report = ru_less_lous.map(row => new GenericRowWithSchema(Array( getValueOrStr("ern")), entRowSchema)
     //lous without ru on links level
     val ru_less_lous_links = louLinks.join(ruLinks,Seq("rurn"), "left_anti")
 
@@ -171,7 +172,7 @@ object InputAnalyser extends RddLogging{
 
     val payeFlattennedLeusLinks = leuLinks.select("ubrn","payes").withColumn("paye", explode_outer(col("payes"))).cache()
     val leu_less_paye_links = payeLinks.join(vatFlattennedLeus,Seq("ubrn"),"left_anti")
-    val leu_with_fantom_paye = vatFlattennedLeus.join(vatLinks,Seq("ubrn"),"left_anti")
+    val leu_with_fantom_paye = payeFlattennedLeusLinks.join(vatLinks,Seq("ubrn"),"left_anti")
     payeFlattennedLeusLinks.unpersist()
 
     val leu_less_link_ch = chLinks.join(leuLinks.select("crn","ubrn"),Seq("crn","ubrn"),"left_anti")
@@ -183,6 +184,9 @@ object InputAnalyser extends RddLogging{
     val leu_with_fantom_ch_links = leus.join(chLinks,Seq("crn","ubrn"),"left_anti")
 
 
+
+
+
     ents.unpersist()
     leus.unpersist()
     lous.unpersist()
@@ -190,45 +194,6 @@ object InputAnalyser extends RddLogging{
     entLinks.unpersist()
     leuLinks.unpersist()
 
-
   }
-
-
-
-
-  def getRepartionedRdd[T](rdd:RDD[T]) = {
-    val noOfPartiions = rdd.getNumPartitions
-    rdd.repartition(noOfPartiions)
-    rdd
-  }
-
-  def getChildlessEnts(entErns:RDD[String],luErns:RDD[String],loErns:RDD[String]) = {
-    val luLessEnts = entErns.subtract(luErns)
-    val loLessEnts = entErns.subtract(loErns)
-    loLessEnts.intersection(luLessEnts)
-  }
-
-  def getOrphanLus(lus:RDD[HFileRow], orphanLuErns:RDD[String])(implicit spark: SparkSession) = {
-    val numberOfPartitions = lus.getNumPartitions
-    val orphanLuErnsRows: RDD[(String,String)] = getRepartionedRdd(orphanLuErns.map(ern => (ern,ern))) //create tuple of 2 duplicate erns
-    val luRows: RDD[(String, (String, String))] = getRepartionedRdd(lus.map(row => (row.getValueOrStr("p_ENT"),(row.key.split("~").head , row.key))) )//tuple(ern,(ubrn,row key))
-    val joined: RDD[(String, ((String, String), Option[String]))] = luRows.leftOuterJoin(orphanLuErnsRows)
-    val orphanLuUbrn = joined.collect { case (ern, ((ubrn,key), None)) => (ern, (ubrn,key)) }
-    orphanLuUbrn.coalesce(numberOfPartitions)
-
-  }
-
-  def getOrphanLos(los:RDD[HFileRow], orphanLoErns:RDD[String])(implicit spark: SparkSession) = {
-    val numberOfPartitions = los.getNumPartitions
-    val orphanLoErnsRows: RDD[(String,String)] = getRepartionedRdd(orphanLoErns.map(ern => (ern,ern)))
-    val loRows: RDD[(String, (String, String))] = getRepartionedRdd(los.map(row => (row.getValueOrStr("ern"),(row.key.split("~").last , row.key))))
-    val joined: RDD[(String, ((String, String), Option[String]))] = loRows.leftOuterJoin(orphanLoErnsRows)
-    val orphanLoLurn = joined.collect { case (ern, ((lurn,key), None)) => (ern, (lurn,key)) }
-    orphanLoLurn.coalesce(numberOfPartitions)
-
-  }
-
-
-
 }
 
