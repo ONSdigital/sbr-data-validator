@@ -30,8 +30,9 @@ case class AppParams(
                       PATH_TO_LOGAL_UNIT_INTEGRITY_REPORT:String,
                       PATH_TO_REPORTING_UNIT_INTEGRITY_REPORT:String,
                       PATH_TO_ENTERPRISE_UNIT_INTEGRITY_REPORT:String,
-                      ENV:String,
-                      PATH_TO_PARQUET:String
+                      PERIOD:String,
+                      PATH_TO_PARQUET:String,
+                      ENV:String
                     )
 
 object AppParams{
@@ -61,7 +62,8 @@ object AppParams{
                                                             args(22),
                                                             args(23),
                                                             args(24),
-                                                            args(25)
+                                                            args(25),
+                                                            args(26)
                                                           )
 
 }

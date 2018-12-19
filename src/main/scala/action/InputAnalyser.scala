@@ -3,7 +3,7 @@ package action
 import dao.hbase.HBaseDao
 import global.{AppParams, Configs}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 import spark.RddLogging
 import spark.extensions.df._
 import model._
@@ -92,14 +92,36 @@ object InputAnalyser extends RddLogging{
     val chLinks = getChLinksDF(appconf).cache()
 
     /**
+      * +-------------------+-------+--------------+--------------+-----------------+---------------------+---------------------+-------+---------+-------------+--------+
+      * | primary unit type | table | p.u.id name  | p.u.id value | fk to s.u. name |   fk to s.u. value  | secondary unit type | table | period  | what's wrong| message|
+      * +-------------------+-------+--------------+--------------+-----------------+---------------------+---------------------+-------+---------+-------------+--------+
+      * */
+    def toReportEntry(df:DataFrame,unit:String,puTable:String,puIdname:String, fkName:String, secUnit:String,suTable:String, period:String,problemType:String, message:String)(implicit spark:SparkSession) = {
+      import spark.implicits._
+      spark.createDataFrame(
+      df.rdd.map ( row => Row(
+                          unit,
+                          puTable,
+                          puIdname,
+                          row.getValueOrNull(puIdname),
+                          fkName,
+                          row.getValueOrNull(fkName),
+                          secUnit,
+                          suTable,
+                          period,
+                          problemType,
+                          message
+                  )), reportRowSchema)
+    }
+    /**
       * Local Units
       * */
     //lous without parent Reporting Unit on Unit tables level
     val ru_less_lous = lous.join(rus,Seq("rurn"), "left_anti")
-    val ru_less_lous_report = ru_less_lous.map(row => new GenericRowWithSchema(Array( getValueOrStr("ern")), entRowSchema)
+    val ru_less_lous_report = toReportEntry(ru_less_lous,"Local Unit", "LOU","lurn","rurn","Reporting Unit","REU",appconf.PERIOD,"CHILDLESS", "Local Unit: No REU children found in REU table")
     //lous without ru on links level
     val ru_less_lous_links = louLinks.join(ruLinks,Seq("rurn"), "left_anti")
-
+    val ru_less_lous_links_report = toReportEntry(ru_less_lous,"Local Unit", "LINKS","lurn","rurn","Reporting Unit","LINKS",appconf.PERIOD,"CHILDLESS", "Local Unit: No REU children found in LINKS table")
     //lous without parent Enterprise on table level
     val ent_less_lous = lous.join(ents,Seq("ern"), "left_anti")
 
