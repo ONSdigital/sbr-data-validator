@@ -58,7 +58,7 @@ object InputAnalyser extends RddLogging{
 
   def getLegalUnitDF(appconf:AppParams)(implicit spark: SparkSession): DataFrame =  {
     val leuRows:RDD[Row] = HBaseDao.readTable(appconf,Configs.conf, HBaseDao.leusTableName(appconf)).map(_.toLeuRow)
-    spark.createDataFrame(leuRows, linksLeuRowSchema)
+    spark.createDataFrame(leuRows, leuRowSchema)
   }
 
   def getEntsDF(appconf:AppParams)(implicit spark: SparkSession): DataFrame =  {
@@ -142,7 +142,7 @@ object InputAnalyser extends RddLogging{
     val ent_less_rus_links = ruLinks.join(entLinks.drop("leus").drop("lous").withColumn("rurn", explode_outer(col("rus"))),Seq("ern"), "left_anti")
     val ent_less_rus_links_report = toReportEntry(ent_less_rus_links,"Reporting Unit", "LINKS","rurn","ern","Enterprise Unit","LINKS",appconf.PERIOD,"ORPHAN", "Local Unit in LINKS: No parent ENTERPRISE found in LINKS table")
     //rus linked to non-existing LOUs children on LINKS table level
-    val rus_links_with_fantom_lous_children_links = ruLinks.withColumn("lurn", explode_outer(col("lous"))).join(louLinks, Seq("rurn"),"left_anti")
+    val rus_links_with_fantom_lous_children_links = ruLinks.withColumn("lurn", explode_outer(col("lous"))).join(louLinks, Seq("lurn"),"left_anti")
     val rus_links_with_fantom_lous_children_links_report = toReportEntry(rus_links_with_fantom_lous_children_links,"Reporting Unit", "LINKS","rurn","lurn","Local Unit","LINKS",appconf.PERIOD,"CHILDLESS", "Reporting Unit in LINKS: No Local Unit children found in LINKS table")
     //REUs records in Links referring to non-existing enterprise units in ENT table
     val rus_links_with_fantom_ent_parents = ruLinks.drop("lous").join(ents,Seq("ern"), "left_anti")
@@ -221,8 +221,9 @@ object InputAnalyser extends RddLogging{
             .union(not_linked_leus_report)
             .union(ent_less_leus_links_report)
             .union(ent_less_leus_report)
-
-    reportDf.write.csv(appconf.PATH_TO_INTEGRITY_REPORT)
+    val invalidUnitCount = reportDf.count()
+    if(invalidUnitCount>0) reportDf.write.csv(appconf.PATH_TO_INTEGRITY_REPORT)
+    else println("No invalid Units found")
 
 
     ents.unpersist()

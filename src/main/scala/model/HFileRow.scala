@@ -139,6 +139,7 @@ case class HFileRow(key:String, cells:Iterable[KVCell[String,String]]) {
 
     new GenericRowWithSchema(Array(
       getLinkId,
+      getValueOrStr("p_REU"),
       getValueOrStr("p_ENT")
     ), linksLouRowSchema)
   }
@@ -179,7 +180,11 @@ case class HFileRow(key:String, cells:Iterable[KVCell[String,String]]) {
     new GenericRowWithSchema(Array(
       getLinkId,
       getValueOrStr("p_ENT"),
-      getCellValue("LOU", false)
+      Try {
+        getCellArrayValue("LOU").map(paye => if (paye.startsWith("c_")) {
+          paye.substring(2)
+        } else paye)
+      }.getOrElse(null)
     ), linksRuRowSchema)
   }
 

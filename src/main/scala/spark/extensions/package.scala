@@ -15,6 +15,7 @@ package object df {
                             .add(StructField("secondary unit type", StringType,true))
                             .add(StructField("s.u. table", StringType,true))
                             .add(StructField("period", StringType,true))
+                            .add(StructField("problem type", StringType,true))
                             .add(StructField("message", StringType,true))
 
 

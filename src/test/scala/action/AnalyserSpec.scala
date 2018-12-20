@@ -1,20 +1,16 @@
 package action
 
 
-import utils.HFileTestUtils
 import dao.HBaseConnectionManager
 import dao.hbase.HBaseDao
-import dao.parquet.ParquetDao
 import global.AppParams
-import global.Configs.conf
 import org.apache.hadoop.hbase.client.Connection
 import org.apache.spark.sql.SparkSession
 import org.scalatest._
-//import spark.extensions.rdd.HBaseDataReader._
+import utils.HFileTestUtils
 import utils.Paths
 import utils.data.existing.ExistingData
-
-import scala.reflect.io.File
+import global.Configs.conf
 
 
 class AnalyserSpec extends HBaseConnectionManager with Paths with WordSpecLike with Matchers with BeforeAndAfterAll with ExistingData with HFileTestUtils{
@@ -29,14 +25,10 @@ class AnalyserSpec extends HBaseConnectionManager with Paths with WordSpecLike w
       "ENT_201804", "ons", "d",existingEntRecordHFiles,
       "LOU_201804", "ons", "d",existingLousRecordHFiles,
       "REU_201804", "ons", "d",existingRusRecordHFiles,
+      "./resources/data/report.csv",
       "201804",
-      "HIVE DB NAME",
-      "HIVE TABLE NAME",
-      "HIVE SHORT TABLE NAME",
-      payeFilePath,
-      vatFilePath,
-      "local",
-      parquetPath
+      parquetPath,
+      "local"
     )))
 
 
@@ -46,6 +38,7 @@ class AnalyserSpec extends HBaseConnectionManager with Paths with WordSpecLike w
     conf.set("hbase.zookeeper.property.clientPort", "2181")
     withHbaseConnection { implicit connection:Connection =>
       createRecords(appConfs)
+      //saveToHBase(appConfs)
     }
     spark.stop
   }*/

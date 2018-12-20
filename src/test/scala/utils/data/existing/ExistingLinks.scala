@@ -46,11 +46,11 @@ trait ExistingLinks {this:TestIds =>
 
   HFileRow(s"ENT~5000000011",List(KVCell("c_100000601835","LEU"), KVCell("c_550000088","LOU"), KVCell("c_REU","6000000006"))),
   HFileRow("LOU~550000088",List(KVCell("p_ENT","5000000011"),KVCell("p_REU","6000000006"))),
-  HFileRow("REU~6000000006",List(KVCell("p_ENT","5000000011"),KVCell("c_LOU","550000088"))),
+  HFileRow("REU~6000000006",List(KVCell("p_ENT","5000000011"),KVCell("c_550000088","LOU"))),
 
   HFileRow(s"ENT~$entWithMissingLouId",List(KVCell("c_100002826247","LEU"), KVCell(s"c_$missingLouLurn","LOU"),KVCell(s"c_REU",missingLouRurn))),
-  HFileRow(s"LOU~$missingLouLurn",List(KVCell("p_ENT",entWithMissingLouId),KVCell(s"p_$missingLouRurn","REU"))),
-  HFileRow(s"REU~$missingLouRurn",List(KVCell("p_ENT",entWithMissingLouId),KVCell(s"c_$missingLouRurn","LOU"))),
+  HFileRow(s"LOU~$missingLouLurn",List(KVCell("p_ENT",entWithMissingLouId),KVCell("p_REU",missingLouRurn))),
+  HFileRow(s"REU~$missingLouRurn",List(KVCell("p_ENT",entWithMissingLouId),KVCell(s"c_$missingLouLurn","LOU"))),
 
 
   HFileRow("ENT~3000000011",List(KVCell("c_100000246017","LEU"), KVCell("c_100000827984","LEU"), KVCell("c_300000088","LOU"), KVCell("c_300000099","LOU"), KVCell("c_REU","2000000002"))),
@@ -59,9 +59,9 @@ trait ExistingLinks {this:TestIds =>
   HFileRow(s"REU~2000000002",List(KVCell("p_ENT","3000000011"),KVCell(s"c_300000088","LOU"),KVCell(s"c_300000099","LOU"))),
 
   HFileRow("ENT~4000000011",List(KVCell("c_100000459235","LEU"), KVCell("c_100000508723","LEU"), KVCell("c_100000508724","LEU"), KVCell("c_300000055","LOU"), KVCell("c_300000066","LOU"), KVCell("c_300000077","LOU"), KVCell("c_REU", "5000000005"))),
-  HFileRow("LOU~300000055",List(KVCell("p_ENT","4000000011"), KVCell("p_5000000005", "REU"))),
-  HFileRow("LOU~300000066",List(KVCell("p_ENT","4000000011"), KVCell("p_5000000005", "REU"))),
-  HFileRow("LOU~300000077",List(KVCell("p_ENT","4000000011"), KVCell("p_5000000005", "REU"))),
+  HFileRow("LOU~300000055",List(KVCell("p_ENT","4000000011"), KVCell("p_REU", "5000000005"))),
+  HFileRow("LOU~300000066",List(KVCell("p_ENT","4000000011"), KVCell("p_REU", "5000000005"))),
+  HFileRow("LOU~300000077",List(KVCell("p_ENT","4000000011"), KVCell("p_REU", "5000000005"))),
   HFileRow(s"REU~5000000005",List(KVCell("p_ENT","4000000011"),KVCell(s"c_300000055","LOU"),KVCell(s"c_300000066","LOU"),KVCell(s"c_300000077","LOU"))),
 
     HFileRow("PAYE~5555L",List(KVCell("p_LEU","100000508724"))),
