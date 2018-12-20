@@ -176,13 +176,23 @@ object InputAnalyser extends RddLogging{
 
     //ents not registered in links
    val not_linked_ents = ents.join(entLinks,Seq("ern"),"left_anti")
+   val not_linked_ents_report = toReportEntry(not_linked_ents,"Enterprise Unit", "ENTERPRISE","ern","ern","Enterprise Unit","LINKS",appconf.PERIOD,"UNLINKED TO ITSELF", "Enterprise Unit: No corresponding ENT found in LINKS table")
+
    val no_table_ref_ent_links = entLinks.join(ents,Seq("ern"),"left_anti")
+   val no_table_ref_ent_links_report = toReportEntry(no_table_ref_ent_links,"Enterprise Unit", "LINKS","ern","ern","Enterprise Unit","ENTERPRISE",appconf.PERIOD,"NOT LINKED TO ITSELF", "Enterprise Unit LINKS: No corresponding ENT found in ENTERPRISE table")
+
    val no_table_ref_leus_links = entLinks.join(leus, Seq("ern"),"left_anti")
+    val no_table_ref_leus_links_report = toReportEntry(no_table_ref_leus_links,"Enterprise Unit", "LINKS","ern","ern","Legal Unit","LEU",appconf.PERIOD,"CHILDLESS", "Enterprise Unit LINBS: No corresponding LEU found in LEU table")
     //on ENT table level
    val ents_with_fantom_leu_children = ents.join(leus, Seq("ern"),"left_anti")
-   val ents_with_fantom_ru_children = ents.join(rus, Seq("ern"),"left_anti")
-   val ents_with_fantom_lou_children = ents.join(lous, Seq("ern"),"left_anti")
+   val ents_with_fantom_leu_children_report = toReportEntry(ents_with_fantom_leu_children,"Enterprise Unit", "ENT","ern","ern","Legal Unit","LEU",appconf.PERIOD,"CHILDLESS", "Enterprise Unit: No corresponding LEU found in LEU table")
 
+   val ents_with_fantom_ru_children = ents.join(rus, Seq("ern"),"left_anti")
+    val ents_with_fantom_ru_children_report = toReportEntry(ents_with_fantom_ru_children,"Enterprise Unit", "ENT","ern","ern","Reporting Unit","REU",appconf.PERIOD,"CHILDLESS", "Enterprise Unit ENT table: No corresponding REU found in REU table")
+
+
+   val ents_with_fantom_lou_children = ents.join(lous, Seq("ern"),"left_anti")
+   val ents_with_fantom_lou_children_report = toReportEntry(ents_with_fantom_lou_children,"Enterprise Unit", "ENT","ern","ern","Local Unit","LOU",appconf.PERIOD,"CHILDLESS", "Enterprise Unit ENT table: No corresponding LOU found in LOU table")
 
 
   /**
@@ -221,6 +231,16 @@ object InputAnalyser extends RddLogging{
             .union(not_linked_leus_report)
             .union(ent_less_leus_links_report)
             .union(ent_less_leus_report)
+            .union(not_linked_ents_report)
+            .union(no_table_ref_ent_links_report)
+            .union(no_table_ref_leus_links_report)
+            .union(ents_with_fantom_leu_children_report)
+            .union(ents_with_fantom_ru_children_report)
+            .union(ents_with_fantom_lou_children_report)
+
+
+
+
     val invalidUnitCount = reportDf.count()
     if(invalidUnitCount>0) reportDf.write.csv(appconf.PATH_TO_INTEGRITY_REPORT)
     else println("No invalid Units found")
