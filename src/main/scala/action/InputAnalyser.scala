@@ -3,11 +3,9 @@ package action
 import dao.hbase.HBaseDao
 import global.{AppParams, Configs}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import spark.RddLogging
 import spark.extensions.df._
-import model._
-import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 
 
 
@@ -68,7 +66,7 @@ object InputAnalyser extends RddLogging{
     spark.createDataFrame(entsRows, entRowSchema)
   }
 
-  def getData(appconf:AppParams)(implicit spark: SparkSession):Unit =  {
+  def validate(appconf:AppParams)(implicit spark: SparkSession):Unit =  {
 
     import org.apache.spark.sql.functions._
 
@@ -96,7 +94,6 @@ object InputAnalyser extends RddLogging{
       * +-------------------+-------+--------------+--------------+-----------------+---------------------+---------------------+-------+---------+-------------+--------+
       * */
     def toReportEntry(df:DataFrame,unit:String,puTable:String,puIdname:String, fkName:String, secUnit:String,suTable:String, period:String,problemType:String, message:String)(implicit spark:SparkSession) = {
-      import spark.implicits._
       spark.createDataFrame(
       df.rdd.map ( row => Row(
                           unit,
@@ -211,7 +208,21 @@ object InputAnalyser extends RddLogging{
     val leu_with_fantom_ch_links = leus.join(chLinks,Seq("crn","ubrn"),"left_anti")
 
 
+    val reportDf = ru_less_lous_report.union(ru_less_lous_report)
+            .union(ru_less_lous_links_report)
+            .union(ent_less_lous_report)
+            .union(ent_less_lous_links_report)
+            .union(ent_link_less_lous_links_report)
+            .union(ent_less_rus_report)
+            .union(ent_less_rus_links_report)
+            .union(rus_links_with_fantom_lous_children_links_report)
+            .union(rus_links_with_fantom_ent_parents_report)
+            .union(rus_links_with_fantom_lu_children_report)
+            .union(not_linked_leus_report)
+            .union(ent_less_leus_links_report)
+            .union(ent_less_leus_report)
 
+    reportDf.write.csv(appconf.PATH_TO_INTEGRITY_REPORT)
 
 
     ents.unpersist()

@@ -54,7 +54,7 @@ class AnalyserSpec extends HBaseConnectionManager with Paths with WordSpecLike w
   "sbr-data-validator" should {
     "blah" in {
       implicit val spark: SparkSession = SparkSession.builder().master("local[*]").appName("sbr-data-validator").getOrCreate()
-      InputAnalyser.getData(appConfs)(spark)
+      InputAnalyser.validate(appConfs)(spark)
       spark.stop()
       true shouldBe true
     }

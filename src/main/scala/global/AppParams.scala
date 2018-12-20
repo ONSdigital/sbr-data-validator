@@ -26,10 +26,7 @@ case class AppParams(
                       HBASE_REPORTINGUNITS_COLUMN_FAMILY:String,
                       PATH_TO_REPORTINGUNITS_HFILE:String,
 
-                      PATH_TO_LEGAL_UNIT_INTEGRITY_REPORT:String,
-                      PATH_TO_LOGAL_UNIT_INTEGRITY_REPORT:String,
-                      PATH_TO_REPORTING_UNIT_INTEGRITY_REPORT:String,
-                      PATH_TO_ENTERPRISE_UNIT_INTEGRITY_REPORT:String,
+                      PATH_TO_INTEGRITY_REPORT:String,
                       PERIOD:String,
                       PATH_TO_PARQUET:String,
                       ENV:String
@@ -60,10 +57,7 @@ object AppParams{
                                                             args(20),
                                                             args(21),
                                                             args(22),
-                                                            args(23),
-                                                            args(24),
-                                                            args(25),
-                                                            args(26)
+                                                            args(23)
                                                           )
 
 }
